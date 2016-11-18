@@ -100,6 +100,37 @@
                 result.push(this.style[key])
             }
             return result
+        },
+
+        // Dimensions
+        height() {
+            return this.clientHeight
+        },
+        width() {
+            return this.clientWidth
+        },
+        fullHeight() {
+            return this.scrollHeight
+        },
+        fullWidth() {
+            return this.scrollWidth
+        },
+
+        // Events
+        on(event, callback) {
+            this.addEventListener(event, callback)
+            return [this, callback]
+        },
+        off(event, callback) {
+            this.removeEventListener(event, callback)
+            return this
+        },
+        click(callback) {
+            if (callback) {
+                return this.on('click', callback)
+            }
+
+            return this.dispatchEvent(new Event('click'));
         }
     }
 
@@ -190,6 +221,33 @@
         // CSS
         css(property, value) {
             return this.map(element => element.css(property, value))
+        },
+
+        // Dimensions
+        height() {
+            return this.map(element => element.height())
+        },
+        width() {
+            return this.map(element => element.width())
+        },
+        fullHeight() {
+            return this.map(element => element.fullHeight())
+        },
+        fullWidth() {
+            return this.map(element => element.fullWidth())
+        },
+
+        // Events
+        on(event, callback) {
+            this.forEach(element, element.on(event, callback))
+            return [this, callback]
+        },
+        off(event, callback) {
+            this.forEach(element, element.off(event, callback))
+            return this
+        },
+        click(callback) {
+            return this.map(element => element.click(callback))
         }
     }
     newNodeListPrototypes.get = newNodeListPrototypes.eq
