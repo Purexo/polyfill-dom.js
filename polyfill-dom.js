@@ -109,7 +109,7 @@
 
         // attr
         attr(attribute, value) {
-            return [...this].map(element => element.attr(attribute, value))
+            return this.map(element => element.attr(attribute, value))
         },
         removeAttr(...attributes) {
             this.forEach(element => element.removeAttr(...attributes))
@@ -126,7 +126,7 @@
 
         // prop
         prop(propertie, value) {
-            return [...this].map(element => element.prop(propertie, value))
+            return this.map(element => element.prop(propertie, value))
         },
         removeProp(...properties) {
             this.forEach(element => element.removeProp(...properties))
@@ -141,8 +141,15 @@
             return this.every(element => element.hasEveryProp(...properties))
         }
     }
+    let futurNodeListProto = {}
 
-    Object.assign(NodeList.prototype, newNodeListPrototypes)
+    Object.assign(futurNodeListProto, newNodeListPrototypes)
+    for (let propertyName in Array.prototype) {
+        futurNodeListProto[propertyName] = Array.prototype[propertyName]
+    }
+    Object.assign(futurNodeListProto, NodeList.prototype)
+    NodeList.prototype = futurNodeListProto
+
 
     /* - Very tricky, but not the aimed target -
     NodeList.prototype.$ = new Proxy(newElementPrototypes, {
