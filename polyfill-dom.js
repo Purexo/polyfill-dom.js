@@ -81,10 +81,40 @@
         },
         hasEveryProp(...properties) {
             return properties.every(prop => this.hasOwnProperty(attr))
+        },
+
+        // CSS
+        css(property, value) {
+            if (!Array.isArray(property)){
+                if (value) {
+                    this.style[property] = value
+                }
+                return this[propertie]
+            }
+
+            let result = []
+            for (let key in propertie) {
+                if (propertie[key]) {
+                    this.style[key] = propertie[key]
+                }
+                result.push(this.style[key])
+            }
+            return result
         }
     }
 
     Object.assign(Element.prototype, newElementPrototypes)
+
+    let backupNodeListProto = {}
+    Object.getOwnPropertyNames(NodeList.prototype)
+        .filter(p => p != 'length') // NodeList.prototype['length'] Raise an Error
+        .forEach(propertyName => backupNodeListProto[propertyName] = NodeList.prototype[propertyName])
+
+    let futurNodeListProto = {}
+    Object.getOwnPropertyNames(Array.prototype)
+        .filter(p => p != 'length') // Array.prototype['length'] Raise an Error
+        .forEach(propertyName => futurNodeListProto[propertyName] = Array.prototype[propertyName])
+    Object.assign(NodeList.prototype, Object.assign(futurNodeListProto, backupNodeListProto))
 
     let newNodeListPrototypes = {
         // class
@@ -139,16 +169,32 @@
         },
         hasEveryProp(...properties) {
             return this.every(element => element.hasEveryProp(...properties))
+        },
+
+        // Collection
+        add(...elements) {
+            elements.forEach(element => this.push(element))
+        },
+        each: NodeList.prototype.forEach,
+        eq(id = null) {
+            return id ? this.item(id) : this.first()
+        },
+        first() {
+            return this.item(0)
+        },
+        index: NodeList.prototype.indexOf,
+        last() {
+            return this.item(this.length - 1)
+        },
+
+        // CSS
+        css(property, value) {
+            return this.map(element => element.css(property, value))
         }
     }
-    let futurNodeListProto = {}
+    newNodeListPrototypes.get = newNodeListPrototypes.eq
 
-    Object.assign(futurNodeListProto, newNodeListPrototypes)
-    for (let propertyName in Array.prototype) {
-        futurNodeListProto[propertyName] = Array.prototype[propertyName]
-    }
-    Object.assign(futurNodeListProto, NodeList.prototype)
-    NodeList.prototype = futurNodeListProto
+    Object.assign(NodeList.prototype, futurNodeListProto, newNodeListPrototypes, backupNodeListProto)
 
 
     /* - Very tricky, but not the aimed target -
