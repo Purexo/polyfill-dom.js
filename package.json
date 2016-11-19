@@ -1,0 +1,31 @@
+{
+  "name": "polyfill-dom.js",
+  "version": "1.0.0",
+  "description": "bring some jQuery taste in your native DOM api",
+  "main": "polyfill-dom.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Purexo/polyfill-dom.js.git"
+  },
+  "keywords": [
+    "vanillajs",
+    "js",
+    "javascript",
+    "vanilla",
+    "dom",
+    "jQuery"
+  ],
+  "author": "Purexo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Purexo/polyfill-dom.js/issues"
+  },
+  "homepage": "https://github.com/Purexo/polyfill-dom.js#readme",
+  "devDependencies": {
+    "http-server": "^0.9.0"
+  }
+}

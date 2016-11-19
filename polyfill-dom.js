@@ -1,4 +1,22 @@
 {
+    /**
+     * Will append every property of every sources if property don't exist in target
+     * Ideal for extend prototype, without risk of erase sensible property
+     * 
+     * @param {any} target
+     * @param {any} sources
+     * @return {any} target
+     */
+    Object.safeAssign = function Object_safeAssign(target, ...sources) {
+        sources.forEach(
+            source => Object.getOwnPropertyNames(source)
+                .filter(propName => !target.hasOwnProperty(propName))
+                .forEach(propName => target[propName] = source[propName])
+        )
+
+        return target
+    }
+
     // --- Element --- //
     let newElementPrototypes = {
         // class
@@ -125,27 +143,17 @@
             this.removeEventListener(event, callback)
             return this
         },
-        click(callback) {
+        Click(callback) {
             if (callback) {
                 return this.on('click', callback)
             }
 
-            return this.dispatchEvent(new Event('click'));
+            return this.click();
         }
     }
 
-    Object.assign(Element.prototype, newElementPrototypes)
-
-    let backupNodeListProto = {}
-    Object.getOwnPropertyNames(NodeList.prototype)
-        .filter(p => p != 'length') // NodeList.prototype['length'] Raise an Error
-        .forEach(propertyName => backupNodeListProto[propertyName] = NodeList.prototype[propertyName])
-
-    let futurNodeListProto = {}
-    Object.getOwnPropertyNames(Array.prototype)
-        .filter(p => p != 'length') // Array.prototype['length'] Raise an Error
-        .forEach(propertyName => futurNodeListProto[propertyName] = Array.prototype[propertyName])
-    Object.assign(NodeList.prototype, Object.assign(futurNodeListProto, backupNodeListProto))
+    Object.safeAssign(Element.prototype, newElementPrototypes)
+    Object.safeAssign(NodeList.prototype, Array.prototype)
 
     let newNodeListPrototypes = {
         // class
@@ -246,22 +254,24 @@
             this.forEach(element, element.off(event, callback))
             return this
         },
-        click(callback) {
-            return this.map(element => element.click(callback))
+        Click(callback) {
+            return this.map(element => element.Click(callback))
         }
     }
     newNodeListPrototypes.get = newNodeListPrototypes.eq
 
-    Object.assign(NodeList.prototype, futurNodeListProto, newNodeListPrototypes, backupNodeListProto)
+    Object.safeAssign(NodeList.prototype, newNodeListPrototypes)
 
 
     /* - Very tricky, but not the aimed target -
     NodeList.prototype.$ = new Proxy(newElementPrototypes, {
         get(obj, prop) {
             return function() {
-                return [...obj].map(element => element[prop].call(element, ...arguments))
+                return obj.map(element => element[prop].call(element, ...arguments))
             }
         }
     })
+    nodelist.$.addClass('class')
+    // -> Array.prototype.map.call(nodelist, element => element['addClass'].call(element, 'class'))
     */
 }
