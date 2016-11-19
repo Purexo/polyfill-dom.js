@@ -20,7 +20,7 @@
     "jQuery"
   ],
   "author": "Purexo",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Purexo/polyfill-dom.js/issues"
   },

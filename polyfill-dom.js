@@ -17,6 +17,33 @@
         return target
     }
 
+    window.parseHTML = function window_parserHTML(str) {
+        const frag = document.createDocumentFragment()
+        const tmp = frag.appendChild(document.createElement('div'))
+        tmp.innerHTML = str
+
+        return tmp.childNodes
+    }
+
+    window.pf = function window_pf(selector, all = true) {
+        if (typeof selector == 'string') {
+            // check if is html
+            if (/<.+>/.test(selector)) {
+                return parseHTML(selector);
+            }
+
+            return all ? document.querySelectorAll(selector) : document.querySelector(selector)
+        }
+
+        if (typeof selector == 'function') {
+            if (document.readyState != 'loading') selector();
+            else document.addEventListener('DOMContentLoaded', selector)
+            return
+        }
+
+        return selector
+    }
+
     // --- Element --- //
     let newElementPrototypes = {
         // class
@@ -72,7 +99,7 @@
 
         // prop
         prop(propertie, value) {
-            if (!Array.isArray(propertie)){
+            if (!Array.isArray(propertie)) {
                 if (value) {
                     this[propertie] = value
                 }
@@ -103,7 +130,7 @@
 
         // CSS
         css(property, value) {
-            if (!Array.isArray(property)){
+            if (!Array.isArray(property)) {
                 if (value) {
                     this.style[property] = value
                 }
@@ -149,8 +176,202 @@
             }
 
             return this.click();
+        },
+
+        // Manipulation
+        /**
+         * insert after itself
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        after(...elements) {
+            elements.map(element => pf(element))
+                .forEach(element => {
+                    try {
+                        return element instanceof NodeList ?
+                            element.forEach(element => this.insertAdjacentElement('afterend', element)) :
+                            this.insertAdjacentElement('afterend', element)
+                    } catch(e) {}
+                })
+            
+            return this
+        },
+
+        /**
+         * Append to itself
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        append(...elements) {
+            elements.map(element => pf(element))
+                .forEach(element => {
+                    try {
+                        return element instanceof NodeList ?
+                            element.forEach(element => this.appendChild(element)) :
+                            this.appendChild(element)
+                    } catch(e) {}
+                })
+            
+            return this
+        }, 
+
+        /**
+         * Append to elements (clone if many)
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        appendTo(...elements) {
+            elements = elements.map(element => pf(element))
+            this.shouldClone = elements.length > 1
+
+            elements.forEach(element => {
+                try {
+                    if (element instanceof NodeList) {
+                        this.shouldClone = this.shouldClone || element.length > 1
+                        return element.forEach(element => element.appendChild(this.shouldClone ? this.clone() : this))
+                    }
+                    return element.appendChild(this.shouldClone ? this.clone() : this)
+                } catch(e) {}
+            })
+
+            return this
+        },
+
+        /**
+         * insert before itself
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        before(...elements) {
+            elements.map(element => pf(element))
+                .forEach(element => {
+                    try {
+                        return element instanceof NodeList ?
+                            element.forEach(element => this.insertAdjacentElement('beforebegin', element)) :
+                            this.insertAdjacentElement('beforebegin', element)
+                    } catch(e) {}
+                })
+            
+            return this
+        },
+
+        clone() {
+            return this.cloneNode()
+        },
+
+        empty() {
+            while (this.hasChildNodes()) {
+                this.removeChild(this.firstChild)
+            }
+
+            return this
+        },
+
+        html(value) {
+            if (value || value == '') {
+                this.innerHTML = value
+            }
+
+            return this.innerHTML
+        },
+
+        /**
+         * insert this after elements self 
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        insertAfter(...elements) {
+            elements = elements.map(element => pf(element))
+            this.shouldClone = elements.length > 1
+
+            elements.forEach(element => {
+                try {
+                    if (element instanceof NodeList) {
+                        this.shouldClone = this.shouldClone || element.length > 1
+                        return element.forEach(element => element.insertAdjacentElement('afterend', this.shouldClone ? this.clone() : this))
+                    }
+                    return element.insertAdjacentElement('afterend', this.shouldClone ? this.clone() : this)
+                } catch(e) {}
+            })
+
+            return this
+        },
+
+        /**
+         * insert this before elements self 
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        insertBefore(...elements) {
+            elements = elements.map(element => pf(element))
+            this.shouldClone = elements.length > 1
+
+            elements.forEach(element => {
+                try {
+                    if (element instanceof NodeList) {
+                        this.shouldClone = this.shouldClone || element.length > 1
+                        return element.forEach(element => element.insertAdjacentElement('beforebegin', this.shouldClone ? this.clone() : this))
+                    }
+                    return element.insertAdjacentElement('beforebegin', this.shouldClone ? this.clone() : this)
+                } catch(e) {}
+            })
+
+            return this
+        },
+
+        /**
+         * Prepend to itself
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        prepend(...elements) {
+            elements.map(element => pf(element))
+                .forEach(element => {
+                    try {
+                        return element instanceof NodeList ?
+                            element.forEach(element => this.insertAdjacentElement('afterbegin', element)) :
+                            this.insertAdjacentElement('afterbegin', element)
+                    } catch(e) {}
+                })
+            
+            return this
+        }, 
+
+        /**
+         * Prepend to elements (clone if many)
+         * @param {Array<string | Element | NodeList>} elements
+         * @returns {Element}
+         */
+        prependTo(...elements) {
+            elements = elements.map(element => pf(element))
+            this.shouldClone = elements.length > 1
+
+            elements.forEach(element => {
+                try {
+                    if (element instanceof NodeList) {
+                        this.shouldClone = this.shouldClone || element.length > 1
+                        return element.forEach(element => element.insertAdjacentElement('afterbegin', this.shouldClone ? this.clone() : this))
+                    }
+                    return element.insertAdjacentElement('afterbegin', this.shouldClone ? this.clone() : this)
+                } catch(e) {}
+            })
+
+            return this
+        },
+
+        remove() {
+            return this.parentNode.removeChild(this)
+        },
+
+        text() {
+            if (value || value == '') {
+                this.textContent = value
+            }
+
+            return this.textContent
         }
     }
+    newElementPrototypes.flush = newElementPrototypes.empty
 
     Object.safeAssign(Element.prototype, newElementPrototypes)
     Object.safeAssign(NodeList.prototype, Array.prototype)
