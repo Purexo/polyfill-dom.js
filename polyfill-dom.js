@@ -44,6 +44,121 @@
         return selector
     }
 
+    /**
+     * @param {object} settings
+     * @param {string} settings.url
+     * @param {string} settings.method
+     * 
+     * @returns {XMLHttpRequest}
+     */
+    function xhrFactory(settings) {
+        settings = settings || {}
+        settings.url = settings.url || ''
+        settings.method = settings.method || 'get'
+
+        const xhr = new XMLHttpRequest()
+        xhr.open(settings.method, settings.url, true)
+
+        return xhr
+    }
+
+    window.xhr = {
+        /**
+         * @param {object} settings
+         * @param {string} settings.url
+         * @param {string} settings.method
+         * @param {any} settings.data
+         * 
+         * @param {function} settings.onComplete
+         * 
+         * @returns {Promise}
+         * then() // onSuccess - parsed response, request
+         * catch() // onFail - request
+         */
+        getJSON(settings = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = xhrFactory(settings)
+
+                xhr.onreadystatechange = function (aEvt) {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            resolve(JSON.parse(xhr.responseText), xhr)
+                        }
+                        else {
+                            reject(xhr)
+                        }
+                        settings.onComplete.call(xhr);
+                    }
+                }
+
+                xhr.send(settings.data);
+            })
+        },
+        /**
+         * @param {object} settings
+         * @param {string} settings.url
+         * @param {string} settings.method
+         * @param {any} settings.data
+         * 
+         * @param {function} settings.onComplete
+         * 
+         * @returns {Promise}
+         * then() // onSuccess - parsed response, request
+         * catch() // onFail - request
+         */
+        getXML(settings = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = xhrFactory(settings)
+                xhr.overrideMimeType('text/xml')
+
+                xhr.onreadystatechange = function (aEvt) {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            resolve(xhr.responseXML, xhr)
+                        }
+                        else {
+                            reject(xhr)
+                        }
+                        settings.onComplete.call(xhr);
+                    }
+                }
+
+                xhr.send(settings.data);
+            })
+        },
+        /**
+         * @param {object} settings
+         * @param {string} settings.url
+         * @param {string} settings.method
+         * @param {any} settings.data
+         * 
+         * @param {function} settings.onComplete
+         * 
+         * @returns {Promise}
+         * then() // onSuccess - parsed response, request
+         * catch() // onFail - request
+         */
+        getRAW(settings = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = xhrFactory(settings)
+
+                xhr.onreadystatechange = function (aEvt) {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            resolve(xhr.responseText, xhr)
+                        }
+                        else {
+                            reject(xhr)
+                        }
+                        settings.onComplete.call(xhr);
+                    }
+                }
+
+                xhr.send(settings.data);
+            })
+        },
+    }
+
     // --- Element --- //
     let newElementPrototypes = {
         // class
