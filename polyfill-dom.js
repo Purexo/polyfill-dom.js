@@ -17,6 +17,26 @@
         return target
     }
 
+    Object.get = function Object_get(object, path) {
+        const keys = path.split('.')
+
+        keys.forEach(key => {
+            object = object[key]
+        });
+
+        return object
+    }
+
+    Object.set = function Object_set(object, path, value) {
+        const keys = path.split('.')
+
+        keys.forEach(key => {
+            object = object[key]
+        });
+
+        return object[keys.pop()] = value
+    }
+
     window.parseHTML = function window_parserHTML(str) {
         const frag = document.createDocumentFragment()
         const tmp = frag.appendChild(document.createElement('div'))
