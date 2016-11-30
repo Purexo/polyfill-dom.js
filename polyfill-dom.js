@@ -17,14 +17,18 @@
         return target
     }
 
-    Object.get = function Object_get(object, path) {
-        const keys = path.split('.')
+    Object.get = function Object_get(object, path, failValue = null) {
+        try {
+            const keys = path.split('.')
 
-        keys.forEach(key => {
-            object = object[key]
-        });
+            keys.forEach(key => {
+                object = object[key]
+            });
 
-        return object
+            return object
+        } catch (e) {
+            return failValue
+        }
     }
 
     Object.set = function Object_set(object, path, value) {
