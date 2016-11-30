@@ -17,7 +17,7 @@
         return target
     }
 
-    Object.get = function Object_get(object, path, failValue = null) {
+    Object.get = function Object_get(object, path, onFailValue = null) {
         try {
             const keys = path.split('.')
 
@@ -27,7 +27,7 @@
 
             return object
         } catch (e) {
-            return failValue
+            return onFailValue
         }
     }
 
