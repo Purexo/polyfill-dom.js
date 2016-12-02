@@ -17,12 +17,39 @@
         return target
     }
 
+    /**
+     * Get value of an object with possibility of get an default value
+     * 
+     * @param {any} object (without . in nested key names)
+     * @param {string} path path value you want get
+     * @param {any} onFailValue default value you want get if cannot acces value with path, null by default
+     * 
+     * @return {any} The value you wanted get or onFailValue
+     * 
+     * @example
+     *  let myObject = {
+     *      foo: {
+     *          bar: 'baz'
+     *      },
+     *      bar: [
+     *          {name: 'value'}
+     *      ]
+     *  }
+     * 
+     *  Object.get(myObject, 'foo.bar') // -> 'baz'
+     *  Object.get(myObject, 'foo.baz', 'default') // -> 'default'
+     *  Object.get(myObject, 'bar.0.name', 'default') // -> 'value'
+     */
     Object.get = function Object_get(object, path, onFailValue = null) {
         try {
             const keys = path.split('.')
 
             keys.forEach(key => {
-                object = object[key]
+                if (Object.getOwnPropertyNames(object).include(key)) {
+                    object = object[key]
+                } else {
+                    throw new TypeError(`Object ${Object} have not key ${key} property`)
+                }
             });
 
             return object
@@ -31,10 +58,53 @@
         }
     }
 
+    /**
+     * Set the value on path object, with tree creation if needed (not crash)
+     * 
+     * @param {any} object (without . in nested key names)
+     * @param {string} path path value you want set
+     * @param {any} value the value you want set
+     * 
+     * @return {any} the value you have set (why not)
+     * 
+     * @example
+     *  let myObject = {
+     *      foo: {
+     *          bar: 'baz'
+     *      },
+     *      bar: [
+     *          {name: 'value'}
+     *      ]
+     *  }
+     *  Object.set(myObject, 'foo.bar', 'notbaz') // myObject.foo.bar == 'notbaz'
+     *  Object.set(myObject, 'bar.0.bar', 'name') // myObject.bar[0].bar == 'name'
+     *  Object.set(myObject, 'foo.foo.foo.bar', 'baz') // myObject.foo.foo.foo.bar == 'baz'
+     * 
+     *  >> myObject
+     *  {
+     *      foo: {
+     *          bar: 'notbaz',
+     *          foo: {
+     *              foo: {
+     *                  bar: 'baz'
+     *              }
+     *          }
+     *      },
+     *      bar: [
+     *          {
+     *              name: 'value',
+     *              bar: 'name'
+     *          }
+     *      ]
+     *  }
+     */
     Object.set = function Object_set(object, path, value) {
         const keys = path.split('.')
 
         keys.forEach(key => {
+            if (!Object.getOwnPropertyNames(object).include(key)) {
+                object[key] = {}
+            }
             object = object[key]
         });
 
