@@ -111,6 +111,66 @@
         return object[keys.pop()] = value
     }
 
+    /**
+     * While your handler reject, retry.
+     * with .then you get your result when resolve
+     * 
+     * Good for spam an API with request limit (with timeout)
+     * 
+     * @param {any} options
+     * @param {Function} options.handlerPromise function for Promise constructor
+     * @param {number} options.timeout (optional) time to wait before retry process
+     * @param {number} options.retry (optional) number of retry. if not set, infinite retry
+     * 
+     * @param {Promise}
+     * 
+     * @example
+     * retryPromise({
+            handlerPromise: (resolve, reject) => {
+                const rand = Math.random()
+                if (rand > 0.75) {
+                    resolve(rand)
+                } else {
+                    reject(rand)
+                }
+            },
+            retry: 5
+        }).then(rand => console.log(rand))
+        // yeah it's a bad example :p
+     */
+    Promise.retryPromise = function Promise_retryPromise(options = {}) {
+        return new Promise((resolve, reject) => {
+            options.handlerPromise = options.handlerPromise || (resolve => resolve())
+            options.timeout = options.timeout || 1000
+            // options.retry = options.retry || 5
+
+            const success = result => resolve(result)
+            let current = 0
+            const errors = []
+            
+            function resolvePromise () {
+                const fail = err => {
+                    errors.push(err)
+                    if (!options.retry || options.retry && current < options.retry) {
+                        setTimeout(resolvePromise, options.timeout || 1000);
+                    } else {
+                        reject({
+                            retry: new Error(`amount of retry passed (${options.retry})`),
+                            errors: errors
+                        })
+                    }
+                }
+
+                const promise = new Promise(options.handlerPromise)
+
+                promise.then(success)
+                promise.catch(fail)
+            }
+
+            resolvePromise()
+        })
+    }
+
     window.parseHTML = function window_parserHTML(str) {
         const frag = document.createDocumentFragment()
         const tmp = frag.appendChild(document.createElement('div'))
